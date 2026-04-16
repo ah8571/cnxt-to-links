@@ -27,8 +27,8 @@ export default {
 
     // --- Public profile page ---
     // /:username or /:username/links
-    const linksMatch = path.match(/^\/([a-z0-9-]{3,30})\/links$/);
-    const usernameMatch = linksMatch || path.match(/^\/([a-z0-9-]{3,30})$/);
+    const linksMatch = path.match(/^\/([a-z0-9_-]{3,30})\/links$/);
+    const usernameMatch = linksMatch || path.match(/^\/([a-z0-9_-]{3,30})$/);
     if (usernameMatch && request.method === "GET") {
       const username = usernameMatch[1];
 
@@ -134,7 +134,7 @@ async function handleApi(
   }
 
   // GET /api/username/check/:username — public availability check
-  const usernameCheckMatch = path.match(/^\/api\/username\/check\/([a-z0-9-]{3,30})$/);
+  const usernameCheckMatch = path.match(/^\/api\/username\/check\/([a-z0-9_-]{3,30})$/);
   if (usernameCheckMatch && request.method === "GET") {
     const slug = usernameCheckMatch[1];
     if (RESERVED_SLUGS.has(slug)) {
@@ -207,7 +207,7 @@ async function handleApi(
   }
 
   // GET /api/profile/:username (public — strip email)
-  const profileMatch = path.match(/^\/api\/profile\/([a-z0-9-]{3,30})$/);
+  const profileMatch = path.match(/^\/api\/profile\/([a-z0-9_-]{3,30})$/);
   if (profileMatch && request.method === "GET") {
     const profile = await getProfile(env.PROFILES, profileMatch[1]);
     if (!profile)

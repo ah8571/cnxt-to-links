@@ -17,7 +17,7 @@ export const ProfileSchema = z.object({
     .string()
     .min(3)
     .max(30)
-    .regex(/^[a-z0-9-]+$/, "Lowercase alphanumeric and hyphens only"),
+    .regex(/^[a-z0-9_-]+$/, "Lowercase alphanumeric, hyphens, and underscores only"),
   email: z.string().email().max(320),
   displayName: z.string().min(1).max(100),
   bio: z.string().max(500).default(""),
