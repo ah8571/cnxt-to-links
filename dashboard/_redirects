@@ -1,4 +1,2 @@
-/* Cloudflare Pages SPA routing: all paths serve index.html */
-/*  /editor    200
-/*  /signup    200
-/*  /*         /index.html   200
+# SPA catch-all: serve index.html for all non-file paths
+/*  /index.html  200
