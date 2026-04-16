@@ -7,13 +7,14 @@ const PUBLIC_BASE = API_BASE.replace("http://127.0.0.1:8787", "http://127.0.0.1:
 
 // --- State ---
 let currentUser = null; // { username, ...profile }
+let sessionToken = localStorage.getItem("cnxt_session") || null;
 let currentView = "landing";
 
 // --- Router ---
 function navigate(view, pushState = true) {
   currentView = view;
   if (pushState) {
-    const paths = { landing: "/", editor: "/editor", signup: "/signup" };
+    const paths = { landing: "/", editor: "/editor", signup: "/signup", login: "/login" };
     history.pushState(null, "", paths[view] || "/");
   }
   render();
@@ -23,12 +24,15 @@ window.addEventListener("popstate", () => {
   const path = location.pathname;
   if (path === "/editor") navigate("editor", false);
   else if (path === "/signup") navigate("signup", false);
+  else if (path === "/login") navigate("login", false);
   else navigate("landing", false);
 });
 
 // --- API helpers ---
 async function apiGet(path) {
-  const res = await fetch(`${API_BASE}${path}`);
+  const headers = {};
+  if (sessionToken) headers["Authorization"] = `Bearer ${sessionToken}`;
+  const res = await fetch(`${API_BASE}${path}`, { headers });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Request failed: ${res.status}`);
@@ -37,9 +41,11 @@ async function apiGet(path) {
 }
 
 async function apiPost(path, data) {
+  const headers = { "Content-Type": "application/json" };
+  if (sessionToken) headers["Authorization"] = `Bearer ${sessionToken}`;
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
   const body = await res.json().catch(() => ({}));
@@ -48,9 +54,11 @@ async function apiPost(path, data) {
 }
 
 async function apiPut(path, data) {
+  const headers = { "Content-Type": "application/json" };
+  if (sessionToken) headers["Authorization"] = `Bearer ${sessionToken}`;
   const res = await fetch(`${API_BASE}${path}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
   const body = await res.json().catch(() => ({}));
@@ -64,9 +72,30 @@ function render() {
   switch (currentView) {
     case "landing":  app.innerHTML = renderLanding(); bindLanding(); break;
     case "signup":   app.innerHTML = renderSignup(); bindSignup(); break;
+    case "login":    app.innerHTML = renderLogin(); bindLogin(); break;
     case "editor":   app.innerHTML = renderEditor(); bindEditor(); break;
     default:         app.innerHTML = renderLanding(); bindLanding();
   }
+}
+
+// --- Magic link verification on page load ---
+async function handleVerifyOnLoad() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token");
+  if (!token || !location.pathname.startsWith("/verify")) return;
+
+  try {
+    const result = await apiPost("/api/auth/verify", { token });
+    if (result.sessionToken) {
+      sessionToken = result.sessionToken;
+      localStorage.setItem("cnxt_session", sessionToken);
+      await loadProfile(result.username);
+      return;
+    }
+  } catch (err) {
+    alert("Login link is invalid or expired. Please request a new one.");
+  }
+  navigate("landing");
 }
 
 // ========================
@@ -77,6 +106,7 @@ function renderLanding() {
     <header class="header">
       <div class="header-logo">links by <span style="color:var(--accent)">cnxt</span></div>
       <nav class="header-nav">
+        <button class="btn btn-secondary btn-sm" id="nav-login-btn">Log in</button>
         <a href="https://github.com/ah8571/links-by-connectionism" target="_blank" class="btn btn-secondary btn-sm">GitHub</a>
       </nav>
     </header>
@@ -94,22 +124,22 @@ function renderLanding() {
 
       <div class="features">
         <div class="card feature">
-          <div class="feature-icon">⚡</div>
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
           <h3>Instant Pages</h3>
           <p>Your page loads in milliseconds from the edge. No spinners, no delays.</p>
         </div>
         <div class="card feature">
-          <div class="feature-icon">🎨</div>
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17.5 10.5a5 5 0 0 0-10 0"/><circle cx="8.5" cy="14" r="2.5"/><path d="M12.5 17.5a5 5 0 0 0-8 0"/><circle cx="17" cy="15.5" r="2"/><path d="M20 19a4 4 0 0 0-6 0"/></svg></div>
           <h3>Clean Themes</h3>
           <p>Minimal light, dark, and bold themes. Your content is the focus.</p>
         </div>
         <div class="card feature">
-          <div class="feature-icon">📊</div>
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
           <h3>Simple Analytics</h3>
           <p>See who's clicking your links. No cookies, no creepy tracking.</p>
         </div>
         <div class="card feature">
-          <div class="feature-icon">🔓</div>
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
           <h3>Open Source</h3>
           <p>MIT licensed. Self-host it. Fork it. Own your data completely.</p>
         </div>
@@ -117,7 +147,7 @@ function renderLanding() {
 
       <div class="centered" style="margin: 2rem 0;">
         <p class="text-muted" style="color:var(--text-muted); margin-bottom: 0.75rem;">Already have a page?</p>
-        <button class="btn btn-secondary" id="load-profile-btn">Load my profile</button>
+        <button class="btn btn-secondary" id="load-profile-btn">Log in with email</button>
       </div>
 
       <footer class="footer">
@@ -143,9 +173,11 @@ function bindLanding() {
   });
 
   document.getElementById("load-profile-btn").addEventListener("click", () => {
-    const username = prompt("Enter your username:");
-    if (!username) return;
-    loadProfile(username.toLowerCase().trim());
+    navigate("login");
+  });
+
+  document.getElementById("nav-login-btn").addEventListener("click", () => {
+    navigate("login");
   });
 }
 
@@ -179,6 +211,11 @@ function renderSignup() {
 
       <div id="signup-error" class="alert alert-error" style="display:none;"></div>
 
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="signup-email" placeholder="you@example.com" maxlength="320">
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:0.25rem;">Used for login only. Never shown publicly.</p>
+      </div>
       <div class="form-group">
         <label class="form-label">Display Name</label>
         <input type="text" class="form-input" id="signup-name" placeholder="Jane Doe" maxlength="100">
@@ -215,10 +252,19 @@ async function handleSignup() {
   btn.textContent = "Creating...";
 
   const username = currentUser?.username;
+  const email = document.getElementById("signup-email").value.trim();
   const displayName = document.getElementById("signup-name").value.trim();
   const bio = document.getElementById("signup-bio").value.trim();
   const linkTitle = document.getElementById("signup-link-title").value.trim();
   const linkUrl = document.getElementById("signup-link-url").value.trim();
+
+  if (!email) {
+    errorEl.textContent = "Email is required for login";
+    errorEl.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Create My Page";
+    return;
+  }
 
   if (!displayName) {
     errorEl.textContent = "Display name is required";
@@ -235,8 +281,9 @@ async function handleSignup() {
 
   try {
     const now = new Date().toISOString();
-    const profile = await apiPost("/api/profile", {
+    const result = await apiPost("/api/profile", {
       username,
+      email,
       displayName,
       bio,
       theme: "minimal-dark",
@@ -245,7 +292,14 @@ async function handleSignup() {
       createdAt: now,
       updatedAt: now,
     });
-    currentUser = profile;
+
+    // Store session token from signup response
+    if (result.sessionToken) {
+      sessionToken = result.sessionToken;
+      localStorage.setItem("cnxt_session", sessionToken);
+    }
+
+    currentUser = result;
     navigate("editor");
   } catch (err) {
     errorEl.textContent = err.message;
@@ -253,6 +307,84 @@ async function handleSignup() {
     btn.disabled = false;
     btn.textContent = "Create My Page";
   }
+}
+
+// ========================
+//  LOGIN PAGE
+// ========================
+function renderLogin() {
+  return `
+    <header class="header">
+      <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
+    </header>
+    <div class="container" style="max-width: 440px;">
+      <h2 style="margin-bottom: 0.5rem;">Log in</h2>
+      <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Enter your email and we'll send you a magic link. No password needed.</p>
+
+      <div id="login-error" class="alert alert-error" style="display:none;"></div>
+      <div id="login-success" class="alert alert-success" style="display:none;"></div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="login-email" placeholder="you@example.com" maxlength="320">
+      </div>
+
+      <button class="btn btn-primary btn-block" id="login-submit" style="margin-top:0.5rem;">Send Magic Link</button>
+    </div>
+  `;
+}
+
+function bindLogin() {
+  document.getElementById("nav-home").addEventListener("click", (e) => {
+    e.preventDefault();
+    navigate("landing");
+  });
+
+  const emailInput = document.getElementById("login-email");
+  const btn = document.getElementById("login-submit");
+
+  btn.addEventListener("click", handleLogin);
+  emailInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleLogin();
+  });
+}
+
+async function handleLogin() {
+  const errorEl = document.getElementById("login-error");
+  const successEl = document.getElementById("login-success");
+  const btn = document.getElementById("login-submit");
+  const email = document.getElementById("login-email").value.trim();
+
+  errorEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!email) {
+    errorEl.textContent = "Please enter your email";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  try {
+    const result = await apiPost("/api/auth/magic", { email });
+
+    // Dev mode: magic link returned directly (no email service configured)
+    if (result.magicUrl) {
+      successEl.innerHTML = `Magic link ready (dev mode): <a href="${escapeHtml(result.magicUrl)}" style="color:var(--accent); word-break:break-all;">Click here to log in</a>`;
+      successEl.style.display = "block";
+    } else {
+      successEl.textContent = "Check your email! We sent you a login link.";
+      successEl.style.display = "block";
+    }
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = "block";
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Send Magic Link";
 }
 
 // ========================
@@ -284,6 +416,7 @@ function renderEditor() {
       <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
       <nav class="header-nav">
         <a href="${publicUrl.startsWith("cnxt") ? "https://" + publicUrl : publicUrl}" target="_blank" class="btn btn-secondary btn-sm">View Page</a>
+        <button class="btn btn-secondary btn-sm" id="logout-btn">Log out</button>
       </nav>
     </header>
     <div class="container">
@@ -448,6 +581,14 @@ function bindEditor() {
 
   // Save
   document.getElementById("save-btn").addEventListener("click", handleSave);
+
+  // Logout
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    sessionToken = null;
+    currentUser = null;
+    localStorage.removeItem("cnxt_session");
+    navigate("landing");
+  });
 }
 
 async function handleSave() {
@@ -499,8 +640,32 @@ function escapeAttr(str) {
 }
 
 // --- Init ---
-const path = location.pathname;
-if (path === "/editor" && !currentUser) navigate("landing", false);
-else if (path === "/editor") navigate("editor", false);
-else if (path === "/signup") navigate("signup", false);
-else navigate("landing", false);
+(async () => {
+  const path = location.pathname;
+
+  // Handle magic link verification
+  if (path.startsWith("/verify")) {
+    await handleVerifyOnLoad();
+    return;
+  }
+
+  // Try to restore session from stored token
+  if (sessionToken && !currentUser) {
+    try {
+      const profile = await apiGet("/api/auth/me");
+      currentUser = profile;
+      navigate("editor", false);
+      return;
+    } catch {
+      // Token expired or invalid — clear it
+      sessionToken = null;
+      localStorage.removeItem("cnxt_session");
+    }
+  }
+
+  if (path === "/editor" && !currentUser) navigate("landing", false);
+  else if (path === "/editor") navigate("editor", false);
+  else if (path === "/signup") navigate("signup", false);
+  else if (path === "/login") navigate("login", false);
+  else navigate("landing", false);
+})();
