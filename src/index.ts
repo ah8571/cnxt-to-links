@@ -251,9 +251,22 @@ async function handleApi(
       const token = magicUrl.split("token=")[1];
       const session = await verifyMagicToken(env.ANALYTICS, token);
 
+      // Send a separate magic link so the user can come back later
+      const returnUrl = await createMagicLink(env.ANALYTICS, parsed.username, parsed.email, dashboardOrigin);
+      const emailSent = await sendMagicEmail(env, parsed.email, returnUrl);
+
       // Strip email from response
       const { email: _email, ...publicProfile } = profile;
-      return jsonResponse({ ...publicProfile, sessionToken: session?.sessionToken }, 201, corsHeaders);
+      const response: Record<string, unknown> = {
+        ...publicProfile,
+        sessionToken: session?.sessionToken,
+        emailSent,
+      };
+      // Dev mode: include magic link so user can save/test it
+      if (!emailSent) {
+        response.magicUrl = returnUrl;
+      }
+      return jsonResponse(response, 201, corsHeaders);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "invalid request";

@@ -9,6 +9,8 @@ const PUBLIC_BASE = API_BASE.replace("http://127.0.0.1:8787", "http://127.0.0.1:
 let currentUser = null; // { username, ...profile }
 let sessionToken = localStorage.getItem("cnxt_session") || null;
 let pendingEmail = null; // email captured from landing page, carried to signup
+let signupMagicUrl = null; // dev-mode magic link shown after signup
+let justSignedUp = false; // flag to show welcome banner in editor
 let currentView = "landing";
 
 // --- Router ---
@@ -368,6 +370,10 @@ async function handleSignup() {
       localStorage.setItem("cnxt_session", sessionToken);
     }
 
+    // Capture magic link for the welcome banner
+    justSignedUp = true;
+    signupMagicUrl = result.magicUrl || null;
+
     currentUser = result;
     pendingEmail = null;
     navigate("editor");
@@ -444,6 +450,16 @@ function renderEditor() {
       </div>
 
       <div id="save-status"></div>
+
+      ${justSignedUp ? `
+        <div class="alert alert-success" id="welcome-banner" style="margin-bottom:1.5rem;">
+          <strong>Your page is live!</strong> 🎉<br>
+          ${signupMagicUrl
+            ? `<span style="font-size:0.85rem;">Save this link to log back in later: <a href="${escapeHtml(signupMagicUrl)}" style="color:#166534; word-break:break-all;">${escapeHtml(signupMagicUrl)}</a></span><br><span style="font-size:0.8rem; opacity:0.7;">(Dev mode — once email is configured, this link will be emailed to you automatically.)</span>`
+            : `<span style="font-size:0.85rem;">We sent a login link to your email — save it to come back and edit anytime.</span>`
+          }
+        </div>
+      ` : ''}
 
       <!-- Profile Details -->
       <p class="section-title">Profile</p>
@@ -527,6 +543,10 @@ function renderEditor() {
 
 function bindEditor() {
   if (!currentUser) return;
+
+  // Clear signup flags after rendering
+  justSignedUp = false;
+  signupMagicUrl = null;
 
   document.getElementById("nav-home").addEventListener("click", (e) => {
     e.preventDefault();
