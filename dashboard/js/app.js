@@ -15,7 +15,7 @@ let currentView = "landing";
 function navigate(view, pushState = true) {
   currentView = view;
   if (pushState) {
-    const paths = { landing: "/", editor: "/editor", "magic-sent": "/magic-sent" };
+    const paths = { landing: "/", editor: "/editor" };
     history.pushState(null, "", paths[view] || "/");
   }
   render();
@@ -24,7 +24,6 @@ function navigate(view, pushState = true) {
 window.addEventListener("popstate", () => {
   const path = location.pathname;
   if (path === "/editor") navigate("editor", false);
-  else if (path === "/magic-sent") navigate("magic-sent", false);
   else navigate("landing", false);
 });
 
@@ -71,7 +70,6 @@ function render() {
   const app = document.getElementById("app");
   switch (currentView) {
     case "landing":    app.innerHTML = renderLanding(); bindLanding(); break;
-    case "magic-sent": app.innerHTML = renderMagicSent(); bindMagicSent(); break;
     case "editor":     app.innerHTML = renderEditor(); bindEditor(); break;
     default:           app.innerHTML = renderLanding(); bindLanding();
   }
@@ -189,11 +187,10 @@ async function handleStart(input, errorEl, infoEl, btn) {
     if (result.magicUrl) {
       // Dev mode — show clickable link
       infoEl.innerHTML = `Check your email! <a href="${escapeHtml(result.magicUrl)}" style="color:var(--accent);">Click here to log in</a> <span style="font-size:0.8rem;">(dev mode)</span>`;
-      infoEl.style.display = "block";
     } else {
-      // Production — email sent, go to confirmation page
-      navigate("magic-sent");
+      infoEl.innerHTML = `We sent a login link to <strong>${escapeHtml(email)}</strong>. Click it to open your dashboard.`;
     }
+    infoEl.style.display = "block";
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.style.display = "block";
@@ -203,31 +200,7 @@ async function handleStart(input, errorEl, infoEl, btn) {
   btn.textContent = "Get Started";
 }
 
-// ========================
-//  MAGIC LINK SENT (confirmation)
-// ========================
-function renderMagicSent() {
-  return `
-    <header class="header">
-      <a href="/" class="header-logo" id="nav-home"><span style="color:var(--accent)">cnxt to</span> links</a>
-    </header>
-    <div class="container" style="max-width: 440px;">
-      <div class="centered">
-        <h2 style="margin-bottom: 0.5rem;">Check your email</h2>
-        <p style="color:var(--text-muted); margin-bottom: 1.5rem;">We sent a login link. Click it to open your dashboard. No password needed.</p>
-        <button class="btn btn-secondary" id="back-btn">Back to home</button>
-      </div>
-    </div>
-  `;
-}
 
-function bindMagicSent() {
-  document.getElementById("nav-home").addEventListener("click", (e) => {
-    e.preventDefault();
-    navigate("landing");
-  });
-  document.getElementById("back-btn").addEventListener("click", () => navigate("landing"));
-}
 
 // ========================
 //  PROFILE EDITOR (handles both new + existing users)
