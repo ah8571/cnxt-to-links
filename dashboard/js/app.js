@@ -10,6 +10,8 @@ let currentUser = null; // { username, ...profile } or null
 let sessionToken = localStorage.getItem("cnxt_session") || null;
 let sessionEmail = null; // email from verified session (for new users)
 let currentView = "landing";
+let autoSaveTimer = null;
+let isSaving = false;
 
 // --- Router ---
 function navigate(view, pushState = true) {
@@ -452,9 +454,15 @@ function bindEditor() {
     el.addEventListener("click", () => {
       document.querySelectorAll("[data-theme]").forEach((e) => e.classList.remove("active"));
       el.classList.add("active");
-      if (currentUser) currentUser.theme = el.dataset.theme;
+      if (currentUser) { currentUser.theme = el.dataset.theme; scheduleAutoSave(); }
     });
   });
+
+  // Auto-save on name/bio change (debounced)
+  const nameInput = document.getElementById("edit-name");
+  if (nameInput && !isNewUser) nameInput.addEventListener("input", () => scheduleAutoSave());
+  const bioInput = document.getElementById("edit-bio");
+  if (bioInput && !isNewUser) bioInput.addEventListener("input", () => scheduleAutoSave());
 
   // Expand/collapse link edit panels
   document.querySelectorAll("[data-expand]").forEach((el) => {
@@ -480,6 +488,7 @@ function bindEditor() {
         const badge = currentUser.links[i].platform ? ` <span class="link-platform-badge">${escapeHtml({"twitter":"Twitter / X","instagram":"Instagram","youtube":"YouTube","tiktok":"TikTok","github":"GitHub","linkedin":"LinkedIn"}[currentUser.links[i].platform] || currentUser.links[i].platform)}</span>` : "";
         titleEl.innerHTML = escapeHtml(el.value) + badge;
       }
+      scheduleAutoSave();
     });
   });
   document.querySelectorAll("[data-edit-url]").forEach((el) => {
@@ -491,6 +500,7 @@ function bindEditor() {
       const wrapper = el.closest(".link-item-wrapper");
       const urlEl = wrapper.querySelector(".link-item-url");
       if (urlEl) urlEl.textContent = el.value;
+      scheduleAutoSave();
     });
   });
 
@@ -500,6 +510,7 @@ function bindEditor() {
       if (!currentUser) return;
       const i = parseInt(el.dataset.editDesc);
       currentUser.links[i].description = el.value || undefined;
+      scheduleAutoSave();
     });
   });
 
@@ -520,7 +531,8 @@ function bindEditor() {
         currentUser.links[i].title = newTitle;
         if (titleInput) titleInput.value = newTitle;
       }
-      render(); // re-render to update badge
+      autoSaveNow(); // save immediately + re-render
+      render();
     });
   });
 
@@ -532,6 +544,7 @@ function bindEditor() {
       if (i < 1) return;
       const links = currentUser.links;
       [links[i - 1], links[i]] = [links[i], links[i - 1]];
+      autoSaveNow();
       render();
     });
   });
@@ -542,6 +555,7 @@ function bindEditor() {
       if (i >= currentUser.links.length - 1) return;
       const links = currentUser.links;
       [links[i], links[i + 1]] = [links[i + 1], links[i]];
+      autoSaveNow();
       render();
     });
   });
@@ -552,6 +566,7 @@ function bindEditor() {
       if (!currentUser) return;
       const i = parseInt(el.dataset.toggle);
       currentUser.links[i].enabled = el.checked;
+      autoSaveNow();
     });
   });
 
@@ -561,6 +576,7 @@ function bindEditor() {
       if (!currentUser) return;
       const i = parseInt(el.dataset.delete);
       currentUser.links.splice(i, 1);
+      autoSaveNow();
       render();
     });
   });
@@ -583,6 +599,7 @@ function bindEditor() {
     if (platform) newLink.platform = platform;
     if (desc) newLink.description = desc;
     currentUser.links.push(newLink);
+    autoSaveNow();
     render();
   });
 
@@ -681,6 +698,44 @@ async function handleCreate() {
   }
 }
 
+function scheduleAutoSave() {
+  if (!currentUser || !currentUser.username) return; // only for existing users
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => doAutoSave(), 1000);
+}
+
+function autoSaveNow() {
+  if (!currentUser || !currentUser.username) return;
+  clearTimeout(autoSaveTimer);
+  doAutoSave();
+}
+
+async function doAutoSave() {
+  if (!currentUser || !currentUser.username || isSaving) return;
+  isSaving = true;
+  const statusEl = document.getElementById("save-status");
+  const btn = document.getElementById("save-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Saving..."; }
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">Saving...</span>';
+
+  // Sync name/bio from inputs if they exist
+  const nameEl = document.getElementById("edit-name");
+  const bioEl = document.getElementById("edit-bio");
+  if (nameEl) currentUser.displayName = nameEl.value.trim();
+  if (bioEl) currentUser.bio = bioEl.value.trim();
+
+  try {
+    const updated = await apiPut(`/api/profile/${currentUser.username}`, currentUser);
+    currentUser = updated;
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--success);font-size:0.85rem;">\u2713 Saved</span>';
+    if (btn) { btn.disabled = false; btn.textContent = "Save Changes"; }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    if (btn) { btn.disabled = false; btn.textContent = "Save Changes"; }
+  }
+  isSaving = false;
+}
+
 async function handleSave() {
   const btn = document.getElementById("save-btn");
   const statusEl = document.getElementById("save-status");
@@ -694,7 +749,7 @@ async function handleSave() {
   try {
     const updated = await apiPut(`/api/profile/${currentUser.username}`, currentUser);
     currentUser = updated;
-    statusEl.innerHTML = '<div class="alert alert-success">Saved! Your page is live.</div>';
+    statusEl.innerHTML = '<div class="alert alert-success">Saved!</div>';
     btn.disabled = false;
     btn.textContent = "Save Changes";
   } catch (err) {
