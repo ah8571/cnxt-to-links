@@ -109,7 +109,7 @@ a:hover { color: var(--accent-hover); }
 .hero h1 { font-size: 2.5rem; font-weight: 800; line-height: 1.15; margin-bottom: 1rem; }
 .hero h1 span { color: var(--accent); }
 .hero p { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 440px; margin-left: auto; margin-right: auto; }
-.claim-form { display: flex; gap: 0.5rem; max-width: 400px; margin: 0 auto; }
+.claim-form { display: flex; gap: 0; max-width: 400px; margin: 0 auto; }
 .claim-prefix {
   display: flex; align-items: center; padding: 0 0.75rem;
   background: var(--surface); border: 1px solid var(--border);

@@ -103,6 +103,47 @@ async function handleApi(
 
   // ---- Auth routes ----
 
+  // POST /api/auth/start — unified entry: email new? → { newUser:true } / email exists? → sends magic link
+  if (path === "/api/auth/start" && request.method === "POST") {
+    try {
+      const body = (await request.json()) as { email?: string };
+      const email = body.email?.toLowerCase().trim();
+      if (!email || !email.includes("@")) {
+        return jsonResponse({ error: "Valid email required" }, 400, corsHeaders);
+      }
+
+      const username = await getUsernameByEmail(env.ANALYTICS, email);
+      if (!username) {
+        // New user — let the client show the signup form
+        return jsonResponse({ newUser: true }, 200, corsHeaders);
+      }
+
+      // Existing user — send magic link
+      const dashboardOrigin = corsOrigin.includes("localhost") ? corsOrigin : "https://links.cnxt.to";
+      const magicUrl = await createMagicLink(env.ANALYTICS, username, email, dashboardOrigin);
+      const emailSent = await sendMagicEmail(env, email, magicUrl);
+
+      if (emailSent) {
+        return jsonResponse({ newUser: false, message: "Login link sent to your email." }, 200, corsHeaders);
+      }
+      // Dev mode
+      return jsonResponse({ newUser: false, message: "Magic link created (dev mode)", magicUrl }, 200, corsHeaders);
+    } catch {
+      return jsonResponse({ error: "bad request" }, 400, corsHeaders);
+    }
+  }
+
+  // GET /api/username/check/:username — public availability check
+  const usernameCheckMatch = path.match(/^\/api\/username\/check\/([a-z0-9-]{3,30})$/);
+  if (usernameCheckMatch && request.method === "GET") {
+    const slug = usernameCheckMatch[1];
+    if (RESERVED_SLUGS.has(slug)) {
+      return jsonResponse({ available: false, reason: "reserved" }, 200, corsHeaders);
+    }
+    const taken = await profileExists(env.PROFILES, slug);
+    return jsonResponse({ available: !taken, reason: taken ? "taken" : null }, 200, corsHeaders);
+  }
+
   // POST /api/auth/magic — send a magic link to email (for existing users)
   if (path === "/api/auth/magic" && request.method === "POST") {
     try {

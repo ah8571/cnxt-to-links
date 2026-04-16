@@ -8,13 +8,14 @@ const PUBLIC_BASE = API_BASE.replace("http://127.0.0.1:8787", "http://127.0.0.1:
 // --- State ---
 let currentUser = null; // { username, ...profile }
 let sessionToken = localStorage.getItem("cnxt_session") || null;
+let pendingEmail = null; // email captured from landing page, carried to signup
 let currentView = "landing";
 
 // --- Router ---
 function navigate(view, pushState = true) {
   currentView = view;
   if (pushState) {
-    const paths = { landing: "/", editor: "/editor", signup: "/signup", login: "/login" };
+    const paths = { landing: "/", editor: "/editor", signup: "/signup" };
     history.pushState(null, "", paths[view] || "/");
   }
   render();
@@ -24,7 +25,6 @@ window.addEventListener("popstate", () => {
   const path = location.pathname;
   if (path === "/editor") navigate("editor", false);
   else if (path === "/signup") navigate("signup", false);
-  else if (path === "/login") navigate("login", false);
   else navigate("landing", false);
 });
 
@@ -72,7 +72,7 @@ function render() {
   switch (currentView) {
     case "landing":  app.innerHTML = renderLanding(); bindLanding(); break;
     case "signup":   app.innerHTML = renderSignup(); bindSignup(); break;
-    case "login":    app.innerHTML = renderLogin(); bindLogin(); break;
+    case "magic-sent": app.innerHTML = renderMagicSent(); bindMagicSent(); break;
     case "editor":   app.innerHTML = renderEditor(); bindEditor(); break;
     default:         app.innerHTML = renderLanding(); bindLanding();
   }
@@ -99,27 +99,26 @@ async function handleVerifyOnLoad() {
 }
 
 // ========================
-//  LANDING PAGE
+//  LANDING PAGE — email-first
 // ========================
 function renderLanding() {
   return `
     <header class="header">
       <div class="header-logo">links by <span style="color:var(--accent)">cnxt</span></div>
       <nav class="header-nav">
-        <button class="btn btn-secondary btn-sm" id="nav-login-btn">Log in</button>
         <a href="https://github.com/ah8571/links-by-connectionism" target="_blank" class="btn btn-secondary btn-sm">GitHub</a>
       </nav>
     </header>
     <div class="container">
       <div class="hero centered">
         <h1>Your links.<br><span>One page. Free.</span></h1>
-        <p>Create your link-in-bio page in seconds. No fees, no lock-in, open source. Share one URL everywhere.</p>
+        <p>Create your link-in-bio page in seconds. No fees, no lock-in, open source.</p>
         <div class="claim-form">
-          <div class="claim-prefix">cnxt.to/</div>
-          <input type="text" class="form-input" id="claim-username" placeholder="yourname" maxlength="30" pattern="[a-z0-9-]+">
-          <button class="btn btn-primary" id="claim-btn">Claim</button>
+          <input type="email" class="form-input" id="start-email" placeholder="you@example.com" maxlength="320" style="border-radius:var(--radius) 0 0 var(--radius);">
+          <button class="btn btn-primary" id="start-btn">Get Started</button>
         </div>
-        <p id="claim-error" class="alert alert-error" style="display:none; margin-top:1rem;"></p>
+        <p id="start-error" class="alert alert-error" style="display:none; margin-top:1rem;"></p>
+        <p id="start-info" style="display:none; margin-top:1rem; color:var(--text-muted); font-size:0.9rem;"></p>
       </div>
 
       <div class="features">
@@ -145,11 +144,6 @@ function renderLanding() {
         </div>
       </div>
 
-      <div class="centered" style="margin: 2rem 0;">
-        <p class="text-muted" style="color:var(--text-muted); margin-bottom: 0.75rem;">Already have a page?</p>
-        <button class="btn btn-secondary" id="load-profile-btn">Log in with email</button>
-      </div>
-
       <footer class="footer">
         <p>links by cnxt — open source, free forever</p>
       </footer>
@@ -158,63 +152,78 @@ function renderLanding() {
 }
 
 function bindLanding() {
-  const input = document.getElementById("claim-username");
-  const btn = document.getElementById("claim-btn");
-  const error = document.getElementById("claim-error");
+  const input = document.getElementById("start-email");
+  const btn = document.getElementById("start-btn");
+  const errorEl = document.getElementById("start-error");
+  const infoEl = document.getElementById("start-info");
 
-  // Auto-lowercase and strip invalid chars
-  input.addEventListener("input", () => {
-    input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  });
-
-  btn.addEventListener("click", () => claimUsername(input, error));
+  btn.addEventListener("click", () => handleStart(input, errorEl, infoEl, btn));
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") claimUsername(input, error);
-  });
-
-  document.getElementById("load-profile-btn").addEventListener("click", () => {
-    navigate("login");
-  });
-
-  document.getElementById("nav-login-btn").addEventListener("click", () => {
-    navigate("login");
+    if (e.key === "Enter") handleStart(input, errorEl, infoEl, btn);
   });
 }
 
-async function claimUsername(input, errorEl) {
-  const username = input.value.trim();
+async function handleStart(input, errorEl, infoEl, btn) {
+  const email = input.value.trim().toLowerCase();
   errorEl.style.display = "none";
+  infoEl.style.display = "none";
 
-  if (username.length < 3) {
-    errorEl.textContent = "Username must be at least 3 characters";
+  if (!email || !email.includes("@")) {
+    errorEl.textContent = "Please enter a valid email address";
     errorEl.style.display = "block";
     return;
   }
 
-  // Navigate to signup with this username
-  currentUser = { username };
-  navigate("signup");
+  btn.disabled = true;
+  btn.textContent = "...";
+
+  try {
+    const result = await apiPost("/api/auth/start", { email });
+
+    if (result.newUser) {
+      // New user — go to signup with email prefilled
+      pendingEmail = email;
+      navigate("signup");
+    } else {
+      // Existing user — magic link sent (or returned in dev mode)
+      if (result.magicUrl) {
+        infoEl.innerHTML = `Welcome back! <a href="${escapeHtml(result.magicUrl)}" style="color:var(--accent);">Click here to log in</a> <span style="font-size:0.8rem;">(dev mode)</span>`;
+      } else {
+        infoEl.textContent = "Welcome back! Check your email for a login link.";
+      }
+      infoEl.style.display = "block";
+    }
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = "block";
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Get Started";
 }
 
 // ========================
-//  SIGNUP PAGE
+//  SIGNUP PAGE — username claim + profile setup
 // ========================
 function renderSignup() {
-  const username = currentUser?.username || "";
+  const email = pendingEmail || "";
   return `
     <header class="header">
       <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
     </header>
     <div class="container" style="max-width: 440px;">
-      <h2 style="margin-bottom: 0.5rem;">Claim <span style="color:var(--accent)">cnxt.to/${escapeHtml(username)}</span></h2>
-      <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Set up your page in a few seconds.</p>
+      <h2 style="margin-bottom: 0.5rem;">Create your page</h2>
+      <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Signing up as <strong style="color:var(--text);">${escapeHtml(email)}</strong></p>
 
       <div id="signup-error" class="alert alert-error" style="display:none;"></div>
 
       <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-input" id="signup-email" placeholder="you@example.com" maxlength="320">
-        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:0.25rem;">Used for login only. Never shown publicly.</p>
+        <label class="form-label">Choose your URL</label>
+        <div class="claim-form" style="margin-bottom:0;">
+          <div class="claim-prefix">cnxt.to/</div>
+          <input type="text" class="form-input" id="signup-username" placeholder="yourname" maxlength="30" pattern="[a-z0-9-]+" style="border-radius:0 var(--radius) var(--radius) 0;">
+        </div>
+        <p id="username-status" style="font-size:0.8rem; margin-top:0.35rem; min-height:1.2em;">&nbsp;</p>
       </div>
       <div class="form-group">
         <label class="form-label">Display Name</label>
@@ -225,15 +234,18 @@ function renderSignup() {
         <textarea class="form-textarea" id="signup-bio" placeholder="Designer & content creator" maxlength="500" rows="2"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">Add your first link</label>
+        <label class="form-label">Add your first link (optional)</label>
         <input type="text" class="form-input" id="signup-link-title" placeholder="Link title" maxlength="100" style="margin-bottom:0.5rem;">
         <input type="url" class="form-input" id="signup-link-url" placeholder="https://...">
       </div>
 
-      <button class="btn btn-primary btn-block" id="signup-submit" style="margin-top:0.5rem;">Create My Page</button>
+      <button class="btn btn-primary btn-block" id="signup-submit" style="margin-top:0.5rem;" disabled>Create My Page</button>
     </div>
   `;
 }
+
+let usernameCheckTimer = null;
+let lastCheckedUsername = "";
 
 function bindSignup() {
   document.getElementById("nav-home").addEventListener("click", (e) => {
@@ -241,7 +253,56 @@ function bindSignup() {
     navigate("landing");
   });
 
-  document.getElementById("signup-submit").addEventListener("click", handleSignup);
+  const usernameInput = document.getElementById("signup-username");
+  const statusEl = document.getElementById("username-status");
+  const submitBtn = document.getElementById("signup-submit");
+
+  // Auto-lowercase and strip invalid chars + live availability check
+  usernameInput.addEventListener("input", () => {
+    usernameInput.value = usernameInput.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    const val = usernameInput.value;
+
+    if (val.length < 3) {
+      statusEl.textContent = val.length > 0 ? "Must be at least 3 characters" : " ";
+      statusEl.style.color = "var(--text-muted)";
+      submitBtn.disabled = true;
+      return;
+    }
+
+    statusEl.textContent = "Checking...";
+    statusEl.style.color = "var(--text-muted)";
+    submitBtn.disabled = true;
+
+    clearTimeout(usernameCheckTimer);
+    usernameCheckTimer = setTimeout(() => checkUsername(val, statusEl, submitBtn), 350);
+  });
+
+  submitBtn.addEventListener("click", handleSignup);
+}
+
+async function checkUsername(username, statusEl, submitBtn) {
+  if (username === lastCheckedUsername) return;
+  lastCheckedUsername = username;
+
+  try {
+    const res = await apiGet(`/api/username/check/${username}`);
+    // Make sure the input hasn't changed since we started
+    if (document.getElementById("signup-username").value !== username) return;
+
+    if (res.available) {
+      statusEl.textContent = "✓ cnxt.to/" + username + " is available!";
+      statusEl.style.color = "var(--success)";
+      submitBtn.disabled = false;
+    } else {
+      statusEl.textContent = res.reason === "reserved" ? "This name is reserved" : "Already taken";
+      statusEl.style.color = "var(--danger)";
+      submitBtn.disabled = true;
+    }
+  } catch {
+    statusEl.textContent = "Could not check availability";
+    statusEl.style.color = "var(--danger)";
+    submitBtn.disabled = true;
+  }
 }
 
 async function handleSignup() {
@@ -251,15 +312,23 @@ async function handleSignup() {
   btn.disabled = true;
   btn.textContent = "Creating...";
 
-  const username = currentUser?.username;
-  const email = document.getElementById("signup-email").value.trim();
+  const username = document.getElementById("signup-username").value.trim();
+  const email = pendingEmail;
   const displayName = document.getElementById("signup-name").value.trim();
   const bio = document.getElementById("signup-bio").value.trim();
   const linkTitle = document.getElementById("signup-link-title").value.trim();
   const linkUrl = document.getElementById("signup-link-url").value.trim();
 
+  if (!username || username.length < 3) {
+    errorEl.textContent = "Please choose a username";
+    errorEl.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Create My Page";
+    return;
+  }
+
   if (!email) {
-    errorEl.textContent = "Email is required for login";
+    errorEl.textContent = "Missing email — please start over";
     errorEl.style.display = "block";
     btn.disabled = false;
     btn.textContent = "Create My Page";
@@ -300,6 +369,7 @@ async function handleSignup() {
     }
 
     currentUser = result;
+    pendingEmail = null;
     navigate("editor");
   } catch (err) {
     errorEl.textContent = err.message;
@@ -310,81 +380,29 @@ async function handleSignup() {
 }
 
 // ========================
-//  LOGIN PAGE
+//  MAGIC LINK SENT (confirmation)
 // ========================
-function renderLogin() {
+function renderMagicSent() {
   return `
     <header class="header">
       <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
     </header>
     <div class="container" style="max-width: 440px;">
-      <h2 style="margin-bottom: 0.5rem;">Log in</h2>
-      <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Enter your email and we'll send you a magic link. No password needed.</p>
-
-      <div id="login-error" class="alert alert-error" style="display:none;"></div>
-      <div id="login-success" class="alert alert-success" style="display:none;"></div>
-
-      <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-input" id="login-email" placeholder="you@example.com" maxlength="320">
+      <div class="centered">
+        <h2 style="margin-bottom: 0.5rem;">Check your email</h2>
+        <p style="color:var(--text-muted); margin-bottom: 1.5rem;">We sent a login link. Click it to open your dashboard. No password needed.</p>
+        <button class="btn btn-secondary" id="back-btn">Back to home</button>
       </div>
-
-      <button class="btn btn-primary btn-block" id="login-submit" style="margin-top:0.5rem;">Send Magic Link</button>
     </div>
   `;
 }
 
-function bindLogin() {
+function bindMagicSent() {
   document.getElementById("nav-home").addEventListener("click", (e) => {
     e.preventDefault();
     navigate("landing");
   });
-
-  const emailInput = document.getElementById("login-email");
-  const btn = document.getElementById("login-submit");
-
-  btn.addEventListener("click", handleLogin);
-  emailInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") handleLogin();
-  });
-}
-
-async function handleLogin() {
-  const errorEl = document.getElementById("login-error");
-  const successEl = document.getElementById("login-success");
-  const btn = document.getElementById("login-submit");
-  const email = document.getElementById("login-email").value.trim();
-
-  errorEl.style.display = "none";
-  successEl.style.display = "none";
-
-  if (!email) {
-    errorEl.textContent = "Please enter your email";
-    errorEl.style.display = "block";
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Sending...";
-
-  try {
-    const result = await apiPost("/api/auth/magic", { email });
-
-    // Dev mode: magic link returned directly (no email service configured)
-    if (result.magicUrl) {
-      successEl.innerHTML = `Magic link ready (dev mode): <a href="${escapeHtml(result.magicUrl)}" style="color:var(--accent); word-break:break-all;">Click here to log in</a>`;
-      successEl.style.display = "block";
-    } else {
-      successEl.textContent = "Check your email! We sent you a login link.";
-      successEl.style.display = "block";
-    }
-  } catch (err) {
-    errorEl.textContent = err.message;
-    errorEl.style.display = "block";
-  }
-
-  btn.disabled = false;
-  btn.textContent = "Send Magic Link";
+  document.getElementById("back-btn").addEventListener("click", () => navigate("landing"));
 }
 
 // ========================
@@ -665,7 +683,6 @@ function escapeAttr(str) {
 
   if (path === "/editor" && !currentUser) navigate("landing", false);
   else if (path === "/editor") navigate("editor", false);
-  else if (path === "/signup") navigate("signup", false);
-  else if (path === "/login") navigate("login", false);
+  else if (path === "/signup" && pendingEmail) navigate("signup", false);
   else navigate("landing", false);
 })();
