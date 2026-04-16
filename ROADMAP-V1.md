@@ -1,4 +1,4 @@
-# Links by cnxt — V1 Development Roadmap
+# cnxt to links — V1 Development Roadmap
 
 > Minimalistic, open-source alternative to Linktree & Stan Store.
 > Built on Cloudflare (R2 + Workers + Pages + KV). Cheap, fast, scalable.
@@ -138,7 +138,7 @@ Each creator = **one JSON file** in R2. No database required for V1.
 
 - [ ] Scaffold lightweight SPA (Preact, Solid, or plain vanilla JS — keep bundle tiny)
 - [ ] Host on Cloudflare Pages at `links.cnxt.to`
-- [ ] **Landing page**: explain what Links by cnxt is, "claim your link" CTA, open source pitch
+- [ ] **Landing page**: explain what cnxt to links is, "claim your link" CTA, open source pitch
 - [ ] Login / magic link request screen
 - [ ] **Signup flow**: claim a username → create profile → redirect to editor
 - [ ] Profile editor:

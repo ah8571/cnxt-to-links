@@ -1,8 +1,8 @@
-# Links by cnxt — Concept
+# cnxt to links — Concept
 
 ## What It Is
 
-**Links by cnxt** is a free, open-source alternative to Linktree and Stan Store. It gives creators a clean, fast "link-in-bio" page — the single URL they drop in their Instagram, TikTok, YouTube, or X bio that points followers to everything they do.
+**cnxt to links** is a free, open-source alternative to Linktree and Stan Store. It gives creators a clean, fast "link-in-bio" page — the single URL they drop in their Instagram, TikTok, YouTube, or X bio that points followers to everything they do.
 
 The difference: **no monthly fees**, no platform lock-in, and full ownership of your data.
 

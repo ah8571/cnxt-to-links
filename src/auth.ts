@@ -102,12 +102,12 @@ export async function sendMagicEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "links by cnxt <noreply@links.cnxt.to>",
+      from: "cnxt to links <noreply@links.cnxt.to>",
       to: [email],
       subject: "Your magic login link",
       html: `
         <div style="font-family:-apple-system,sans-serif; max-width:480px; margin:0 auto; padding:2rem;">
-          <h2 style="color:#6366f1;">links by cnxt</h2>
+          <h2 style="color:#6366f1;">cnxt to links</h2>
           <p>Click below to log in to your dashboard. This link expires in 15 minutes.</p>
           <a href="${magicUrl}" style="display:inline-block; background:#6366f1; color:#fff; padding:12px 24px; border-radius:6px; text-decoration:none; margin:1rem 0;">Log in to Dashboard</a>
           <p style="color:#999; font-size:0.85rem;">If you didn't request this, you can safely ignore it.</p>

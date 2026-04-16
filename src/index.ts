@@ -54,7 +54,7 @@ export default {
 
     // --- Root / landing ---
     if (path === "/") {
-      return new Response("links by cnxt — coming soon", {
+      return new Response("cnxt to links — coming soon", {
         status: 200,
         headers: { "Content-Type": "text/plain" },
       });

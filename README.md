@@ -1,8 +1,8 @@
-# Links by cnxt
+# cnxt to links
 
 **The free, open-source link-in-bio platform.**
 
-Linktree charges $5–24/month. Stan Store charges $29/month. Both are serving a styled page with a list of links. Links by cnxt does the same thing — for free — and you own everything.
+Linktree charges $5–24/month. Stan Store charges $29/month. Both are serving a styled page with a list of links. cnxt to links does the same thing — for free — and you own everything.
 
 ---
 
@@ -10,7 +10,7 @@ Linktree charges $5–24/month. Stan Store charges $29/month. Both are serving a
 
 Every creator needs a link-in-bio page. Most are paying monthly fees for what is fundamentally a small file served through a CDN. There's no reason this should cost money.
 
-Links by cnxt strips the problem down to its core: **each creator's profile is a JSON file, rendered as a fast static page, served at the edge.** No bloated backend. No database. No vendor lock-in.
+cnxt to links strips the problem down to its core: **each creator's profile is a JSON file, rendered as a fast static page, served at the edge.** No bloated backend. No database. No vendor lock-in.
 
 ## How It Works
 

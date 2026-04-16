@@ -106,7 +106,7 @@ async function handleVerifyOnLoad() {
 function renderLanding() {
   return `
     <header class="header">
-      <div class="header-logo">links by <span style="color:var(--accent)">cnxt</span></div>
+      <div class="header-logo"><span style="color:var(--accent)">cnxt to</span> links</div>
       <nav class="header-nav">
         <a href="https://github.com/ah8571/links-by-connectionism" target="_blank" class="btn btn-secondary btn-sm">GitHub</a>
       </nav>
@@ -147,7 +147,7 @@ function renderLanding() {
       </div>
 
       <footer class="footer">
-        <p>links by cnxt — open source, free forever</p>
+        <p>cnxt to links — open source, free forever</p>
       </footer>
     </div>
   `;
@@ -211,7 +211,7 @@ function renderSignup() {
   const email = pendingEmail || "";
   return `
     <header class="header">
-      <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
+      <a href="/" class="header-logo" id="nav-home"><span style="color:var(--accent)">cnxt to</span> links</a>
     </header>
     <div class="container" style="max-width: 440px;">
       <h2 style="margin-bottom: 0.5rem;">Create your page</h2>
@@ -391,7 +391,7 @@ async function handleSignup() {
 function renderMagicSent() {
   return `
     <header class="header">
-      <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
+      <a href="/" class="header-logo" id="nav-home"><span style="color:var(--accent)">cnxt to</span> links</a>
     </header>
     <div class="container" style="max-width: 440px;">
       <div class="centered">
@@ -437,7 +437,7 @@ function renderEditor() {
 
   return `
     <header class="header">
-      <a href="/" class="header-logo" id="nav-home">links by <span style="color:var(--accent)">cnxt</span></a>
+      <a href="/" class="header-logo" id="nav-home"><span style="color:var(--accent)">cnxt to</span> links</a>
       <nav class="header-nav">
         <a href="${publicUrl.startsWith("cnxt") ? "https://" + publicUrl : publicUrl}" target="_blank" class="btn btn-secondary btn-sm">View Page</a>
         <button class="btn btn-secondary btn-sm" id="logout-btn">Log out</button>
@@ -535,7 +535,7 @@ function renderEditor() {
       <button class="btn btn-primary btn-block" id="save-btn" style="margin-bottom:2rem;">Save Changes</button>
 
       <footer class="footer">
-        <p>links by cnxt — open source, free forever</p>
+        <p>cnxt to links — open source, free forever</p>
       </footer>
     </div>
   `;
