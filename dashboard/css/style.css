@@ -77,13 +77,28 @@ a:hover { color: var(--accent-hover); }
 }
 
 /* --- Link List Items --- */
+.link-item-wrapper {
+  margin-bottom: 0.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); transition: border-color 0.15s;
+}
+.link-item-wrapper:hover { border-color: var(--accent); }
 .link-item {
   display: flex; align-items: center; gap: 0.75rem;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem; transition: border-color 0.15s;
+  padding: 0.75rem 1rem;
 }
-.link-item:hover { border-color: var(--accent); }
+.link-item:hover { }
+.link-chevron {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 0.9rem; padding: 0.25rem; transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.link-chevron.expanded { transform: rotate(180deg); }
+.link-edit-panel {
+  padding: 0 1rem 0.75rem 1rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  border-top: 1px solid var(--border);
+}
 .link-item-content { flex: 1; min-width: 0; }
 .link-item-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .link-item-url { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

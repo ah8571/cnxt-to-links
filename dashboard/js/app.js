@@ -216,16 +216,23 @@ function renderEditor() {
   const displayUrl = currentUser ? `cnxt.to/${profile.username}` : null;
 
   const linksHtml = (profile.links || []).map((link, i) => `
-    <div class="link-item" data-index="${i}">
-      <div class="link-item-content">
-        <div class="link-item-title">${escapeHtml(link.title)}</div>
-        <div class="link-item-url">${escapeHtml(link.url)}</div>
+    <div class="link-item-wrapper" data-index="${i}">
+      <div class="link-item">
+        <button class="link-chevron" data-expand="${i}" title="Edit link">&#9662;</button>
+        <div class="link-item-content">
+          <div class="link-item-title">${escapeHtml(link.title)}</div>
+          <div class="link-item-url">${escapeHtml(link.url)}</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" ${link.enabled !== false ? "checked" : ""} data-toggle="${i}">
+          <span class="toggle-slider"></span>
+        </label>
+        <button class="btn btn-danger btn-sm" data-delete="${i}">✕</button>
       </div>
-      <label class="toggle">
-        <input type="checkbox" ${link.enabled !== false ? "checked" : ""} data-toggle="${i}">
-        <span class="toggle-slider"></span>
-      </label>
-      <button class="btn btn-danger btn-sm" data-delete="${i}">✕</button>
+      <div class="link-edit-panel" id="link-edit-${i}" style="display:none;">
+        <input type="text" class="form-input" data-edit-title="${i}" value="${escapeAttr(link.title)}" placeholder="Link title" maxlength="100">
+        <input type="url" class="form-input" data-edit-url="${i}" value="${escapeAttr(link.url)}" placeholder="https://...">
+      </div>
     </div>
   `).join("");
 
@@ -443,6 +450,41 @@ function bindEditor() {
       document.querySelectorAll("[data-theme]").forEach((e) => e.classList.remove("active"));
       el.classList.add("active");
       if (currentUser) currentUser.theme = el.dataset.theme;
+    });
+  });
+
+  // Expand/collapse link edit panels
+  document.querySelectorAll("[data-expand]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const i = el.dataset.expand;
+      const panel = document.getElementById(`link-edit-${i}`);
+      const isOpen = panel.style.display !== "none";
+      panel.style.display = isOpen ? "none" : "flex";
+      el.classList.toggle("expanded", !isOpen);
+    });
+  });
+
+  // Inline edit link title/url
+  document.querySelectorAll("[data-edit-title]").forEach((el) => {
+    el.addEventListener("input", () => {
+      if (!currentUser) return;
+      const i = parseInt(el.dataset.editTitle);
+      currentUser.links[i].title = el.value;
+      // Update the displayed title
+      const wrapper = el.closest(".link-item-wrapper");
+      const titleEl = wrapper.querySelector(".link-item-title");
+      if (titleEl) titleEl.textContent = el.value;
+    });
+  });
+  document.querySelectorAll("[data-edit-url]").forEach((el) => {
+    el.addEventListener("input", () => {
+      if (!currentUser) return;
+      const i = parseInt(el.dataset.editUrl);
+      currentUser.links[i].url = el.value;
+      // Update the displayed url
+      const wrapper = el.closest(".link-item-wrapper");
+      const urlEl = wrapper.querySelector(".link-item-url");
+      if (urlEl) urlEl.textContent = el.value;
     });
   });
 
