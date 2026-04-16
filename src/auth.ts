@@ -102,7 +102,7 @@ export async function sendMagicEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "links by cnxt <noreply@cnxt.to>",
+      from: "links by cnxt <noreply@links.cnxt.to>",
       to: [email],
       subject: "Your magic login link",
       html: `
