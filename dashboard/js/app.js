@@ -113,13 +113,11 @@ function renderLanding() {
   return `
     <header class="header">
       <div class="header-logo"><span style="color:var(--accent)">cnxt to</span> links</div>
-      <nav class="header-nav">
-        <a href="https://github.com/ah8571/cnxt-to-links" target="_blank" class="btn btn-secondary btn-sm">GitHub</a>
-      </nav>
+
     </header>
     <div class="container">
       <div class="hero centered">
-        <h1>Your links.<br><span>One page. Free.</span></h1>
+        <h1>Your links.<br><span>One page. Free for most users.</span></h1>
         <p>Create your link-in-bio page in seconds. No fees, no lock-in, open source.</p>
         <div class="claim-form">
           <input type="email" class="form-input" id="start-email" placeholder="you@example.com" maxlength="320" style="border-radius:var(--radius) 0 0 var(--radius);">
@@ -148,12 +146,12 @@ function renderLanding() {
         <div class="card feature">
           <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
           <h3>Open Source</h3>
-          <p>MIT licensed. Self-host it. Fork it. Own your data completely.</p>
+          <p>GNU licensed. Self-host it. Fork it. Own your data completely.</p>
         </div>
       </div>
 
       <footer class="footer">
-        <p>cnxt to links — open source, free forever</p>
+        <p>cnxt to links — open source, free for most users — <a href="https://github.com/ah8571/cnxt-to-links" target="_blank">github</a></p>
       </footer>
     </div>
   `;
@@ -365,7 +363,7 @@ function renderEditor() {
       <button class="btn btn-primary btn-block" id="save-btn" style="margin-bottom:2rem;">${isNewUser ? "Create My Page" : "Save Changes"}</button>
 
       <footer class="footer">
-        <p>cnxt to links — open source, free forever</p>
+        <p>cnxt to links — open source, free for most users — <a href="https://github.com/ah8571/cnxt-to-links" target="_blank">github</a></p>
       </footer>
     </div>
   `;
