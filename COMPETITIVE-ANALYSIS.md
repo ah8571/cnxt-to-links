@@ -119,31 +119,6 @@ The "link-in-bio" space has exploded into a multi-hundred-million dollar market.
 - Can feel cluttered — tries to do too much
 - Smaller brand recognition vs Linktree
 
----
-
-### 4. Carrd
-
-**The minimalist.** One-page sites, not specifically link-in-bio.
-
-| Plan | Price | Key Differentiators |
-|------|-------|---------------------|
-| Free | $0 | 3 sites, core features, responsive templates |
-| Pro Lite | $9/yr | Custom domains, more sites, no branding |
-| Pro Standard | $19/yr | Forms (Mailchimp, Kit, etc.), widgets & embeds (Stripe, PayPal, Gumroad) |
-| Pro Plus | $49/yr | Google Analytics, more sites |
-
-**Strengths:**
-- Incredibly cheap ($19/year beats everyone)
-- Beautiful, simple, fast one-page sites
-- Great for personal landing pages, not just links
-- Large template library
-
-**Weaknesses:**
-- Not purpose-built for link-in-bio (no native analytics, no link click tracking)
-- No digital product sales
-- No email collection on free tier
-- Manual setup — no social icon auto-detection
-- Not open source
 
 ---
 
@@ -183,7 +158,7 @@ The "link-in-bio" space has exploded into a multi-hundred-million dollar market.
 | **Tap Bio** | Free / $5/mo / $12/mo | Card-based layout, Instagram-focused |
 | **Koji** | Free | App-powered link-in-bio, mini-apps, tipping, games |
 | **Shorby** | $12/mo+ | Smart pages, messenger links, retargeting pixels |
-
+**link.me**
 ---
 
 ## Feature Gap Analysis — cnxt to links
