@@ -207,6 +207,7 @@ Each creator = **one JSON file** in R2. No database required for V1.
 - [ ] Image upload (use external URLs for V1)
 - [ ] Postgres / D1 migration (only if KV + R2 limits become an issue)
 - [ ] Self-hosted Docker alternative
+- [ ] **Research social platform API costs** — Document pricing, rate limits, and terms for: Facebook, Instagram, TikTok, X (Twitter), LinkedIn, and Bluesky APIs. Feeds into social posting feature and metered billing model (see BILLING.md).
 
 ---
 
