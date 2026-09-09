@@ -25,7 +25,7 @@
 <body>
   <div class="wrap">
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: August 7, 2026</p>
+    <p class="updated">Last updated: September 9, 2026</p>
 
     <div class="entity">
       FreeSurf is a product of <strong>Planting Moon LLC</strong>, located at 5830 E 2nd St, Ste 7000 #35119, Casper, Wyoming 82609.<br />
@@ -51,12 +51,15 @@
     operate the service, so we avoid storing additional profile details (such as your name or photo) from these sign-in
     providers where possible.</p>
 
-    <p><strong>AI Processing:</strong> Some FreeSurf tools use AI models to generate results. Models run on hosted
-    inference providers (currently <strong>Together AI</strong>, <strong>OpenRouter</strong>, or our own self-hosted
-    <strong>RunPod</strong> GPU), and we may switch between them. We generally use open-source models. Your text,
-    audio, and photos are shared only with the provider running the model for that request, strictly to produce the
-    output, and are not used to train models. See our <a href="/ai-processing">AI Processing Disclosure</a> for full
-    details on providers, inputs, and what happens to results:</p>
+    <span id="ai-processing"></span>
+    <p><strong>AI Processing:</strong> Some FreeSurf tools use AI to generate results. Before any of your content is sent to an AI provider, the app asks for your permission and explains what is being sent. FreeSurf is currently subscription-first and does not run third-party advertising. AI content is sent only to the provider required to produce the result you requested and is transmitted through our own servers.</p>
+    <p>FreeSurf uses hosted AI inference providers, currently <strong>Together AI</strong> (Together Computer, Inc., <a href="https://together.ai">together.ai</a>), and may also use <strong>OpenRouter</strong> or our own self-hosted <strong>RunPod</strong> GPU infrastructure; we generally use open-source models. Depending on the app, the following is sent to Together AI strictly to produce the output:</p>
+    <ul>
+      <li><strong>Transcriber:</strong> your audio is sent to be transcribed into text.</li>
+      <li><strong>Natural Reader:</strong> your text is sent to be synthesized into speech audio.</li>
+      <li><strong>Calorie Tracker:</strong> your meal photos are sent to estimate their nutrition.</li>
+    </ul>
+    <p>Content is shared only with the provider running the model for that request, used solely to complete the request, not stored after processing, and never used to train or fine-tune models. Together AI processes this content only to generate the requested output and provides data protection that meets or exceeds our own standards. For full details on providers, inputs, and what happens to results, see our <a href="/ai-processing">AI Processing Disclosure</a>.</p>
 
     <h2>2. How We Use Information</h2>
     <ul>
@@ -69,22 +72,10 @@
     </ul>
     <p>We do not sell personal information. We do not use your invoice data, link profiles, posts, or AI-generated content for advertising purposes.</p>
 
-    <h2>3. Advertising &amp; Third-Party Ad Networks</h2>
-    <p>FreeSurf apps display advertisements through third-party ad networks such as Google AdMob, AppLovin MAX, and similar providers. To serve and measure ads, these networks may collect:</p>
-    <ul>
-      <li><strong>Identifiers:</strong> Device advertising ID (IDFA on iOS, AAID on Android)</li>
-      <li><strong>Location:</strong> Coarse location derived from IP address (not precise GPS)</li>
-      <li><strong>Usage Data:</strong> Product interaction data (e.g., ad views, clicks)</li>
-      <li><strong>Diagnostics:</strong> Crash logs and performance data</li>
-    </ul>
-    <p>This data is shared with our ad mediation partners solely for ad delivery and measurement. No personal information from your FreeSurf account or tool usage (invoices, transcripts, meal logs, recordings) is shared with advertisers. Ad-supported functionality is disclosed in each app's store listing.</p>
-    <p><strong>Android Advertising ID (AD_ID):</strong> On Android devices, the Google Mobile Ads SDK accesses the Android Advertising ID for ad targeting, frequency capping, conversion tracking, and fraud prevention. The <code>com.google.android.gms.permission.AD_ID</code> permission is automatically included in our apps through the AdMob SDK library manifest. This permission is used solely to access the advertising identifier — no other Android permissions are requested for advertising purposes.</p>
-    <p>Before personalized ads are served, the app will request permission via Apple's App Tracking Transparency (ATT) prompt or Android's equivalent. You may opt out at any time through your device's privacy settings:</p>
-    <ul>
-      <li><strong>iOS:</strong> Settings → Privacy &amp; Security → Tracking → toggle off for the app. Or Settings → Privacy &amp; Security → Apple Advertising → turn off Personalized Ads.</li>
-      <li><strong>Android:</strong> Settings → Privacy → Ads → Delete advertising ID, or Settings → Google → Ads → Opt out of Ads Personalization.</li>
-    </ul>
-    <p>Non-personalized ads do not require tracking permission.</p>
+    <h2>3. Advertising, Tracking &amp; Attribution</h2>
+    <p>FreeSurf is currently a subscription-first product. The AI utility apps do not run third-party advertising, do not include advertising SDKs, and do not collect or use the Apple identifier for advertisers (IDFA) or the Android Advertising ID (AAID). We do not perform cross-app tracking, and therefore we do not show an Apple App Tracking Transparency (ATT) prompt.</p>
+    <p>For marketing measurement we rely on privacy-preserving, aggregate attribution (such as Apple's SKAdNetwork) that does not require personal data or tracking consent.</p>
+    <p>If we later introduce an ad-supported tier, this section will be updated before any advertising SDK is added, and any required tracking consent will be requested at that time.</p>
 
     <h2>4. Usage Analytics</h2>
     <p>To understand how our tools are used and to improve them, we may collect <strong>product analytics</strong> about
@@ -105,7 +96,6 @@
       <li><strong>Cloudflare</strong> — web hosting, Workers, R2 storage, and KV</li>
       <li><strong>Together AI / OpenRouter</strong> — hosted AI inference providers</li>
       <li><strong>RunPod</strong> — our own GPU infrastructure for self-hosted AI models</li>
-      <li><strong>Google AdMob / AppLovin MAX</strong> — in-app advertising</li>
     </ul>
     <p>These providers process data on our behalf to deliver specific parts of the service.</p>
 
