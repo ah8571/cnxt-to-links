@@ -52,14 +52,24 @@
     providers where possible.</p>
 
     <span id="ai-processing"></span>
-    <p><strong>AI Processing:</strong> Some FreeSurf tools use AI to generate results. Before any of your content is sent to an AI provider, the app asks for your permission and explains what is being sent. FreeSurf is currently subscription-first and does not run third-party advertising. AI content is sent only to the provider required to produce the result you requested and is transmitted through our own servers.</p>
-    <p>FreeSurf uses hosted AI inference providers, currently <strong>Together AI</strong> (Together Computer, Inc., <a href="https://together.ai">together.ai</a>), and may also use <strong>OpenRouter</strong> or our own self-hosted <strong>RunPod</strong> GPU infrastructure; we generally use open-source models. Depending on the app, the following is sent to Together AI strictly to produce the output:</p>
+    <p><strong>AI Processing:</strong> Some FreeSurf tools use AI to generate results. Before any of your content is sent to an AI provider, the app asks for your permission and explains what is being sent. FreeSurf is currently subscription-first and does not run third-party advertising. AI content is sent only to the provider required to produce the result you requested and is transmitted through our own servers. This section explains where AI models run, what we send to them, and what happens to the results.</p>
+    <p><strong>Where AI models run.</strong> We choose the AI infrastructure that best fits each tool and may switch providers over time. AI processing runs on one or more of the following:</p>
     <ul>
-      <li><strong>Transcriber:</strong> your audio is sent to be transcribed into text.</li>
-      <li><strong>Natural Reader:</strong> your text is sent to be synthesized into speech audio.</li>
-      <li><strong>Calorie Tracker:</strong> your meal photos are sent to estimate their nutrition.</li>
+      <li><strong>Together AI</strong> — a hosted, serverless GPU inference provider (used for most of our models today; Together Computer, Inc., <a href="https://together.ai">together.ai</a>).</li>
+      <li><strong>OpenRouter</strong> — a hosted inference aggregator (used for some tools and fallbacks).</li>
+      <li><strong>Self-hosted RunPod</strong> — our own rented GPU infrastructure (for specific models we run ourselves).</li>
     </ul>
-    <p>Content is shared only with the provider running the model for that request, used solely to complete the request, not stored after processing, and never used to train or fine-tune models. Together AI processes this content only to generate the requested output and provides data protection that meets or exceeds our own standards. For full details on providers, inputs, and what happens to results, see our <a href="/ai-processing">AI Processing Disclosure</a>.</p>
+    <p>We generally prefer open-source models (for example, open-weight text, vision, speech, and text-to-speech models). We use a closed-source model only when necessary to achieve an acceptable result for a particular feature.</p>
+    <p><strong>What we send to an AI provider.</strong> Depending on the tool, the inputs you provide are sent to the active provider's infrastructure solely to generate the result you requested:</p>
+    <ul>
+      <li><strong>Natural Reader:</strong> text you ask to be read aloud.</li>
+      <li><strong>Transcriber:</strong> audio you ask to be transcribed.</li>
+      <li><strong>Calorie Tracker:</strong> food photos and/or food descriptions.</li>
+    </ul>
+    <p>Your inputs are shared only with the provider(s) running the model for that request, strictly to produce the output. We do not use them to sell to or profile you, and we instruct providers not to use submitted content to train their models.</p>
+    <p><strong>What happens to the results.</strong> The result returned by the AI provider is delivered back to you in the app. Depending on how you use the tool, results may be stored locally on your device (for example, generated audio or saved recordings) and, if you are signed in, associated with your account and stored in our database so your history can sync across devices. Where a result is associated with a user, it is subject to the same access, retention, and deletion rights described in this Privacy Policy.</p>
+    <p><strong>No training.</strong> Content you submit is never used to train or fine-tune our models, and we do not permit the providers we use to train on it for their own benefit.</p>
+    <p><strong>Data minimization.</strong> We send only the information required for the specific request, we do not combine your AI inputs with unrelated personal data, and we rely on providers that delete or do not retain submitted content beyond what is required to fulfill the request. Together AI and our other providers process this content only to complete the request and provide data protection that meets or exceeds our own standards.</p>
 
     <h2>2. How We Use Information</h2>
     <ul>
@@ -106,7 +116,7 @@
       <li><strong>AI processing:</strong> Submitted text, audio, and photos are sent to the active AI inference
       provider to produce a result and are not retained there beyond the request. Generated results are saved locally
       on your device; if you are signed in, they may also be stored in our database and associated with your account
-      for cross-device access. See our <a href="/ai-processing">AI Processing Disclosure</a>.</li>
+      for cross-device access. See the AI Processing section above.</li>
       <li><strong>No model training:</strong> User content processed by our AI models is never used to train, fine-tune, or improve the models. Transcripts, audio, and images are used strictly for immediate real-time output.</li>
       <li><strong>Support requests:</strong> May be retained to resolve issues and document outcomes.</li>
     </ul>
@@ -135,7 +145,7 @@
     <p>Planting Moon LLC<br />5830 E 2nd St, Ste 7000 #35119, Casper, WY 82609</p>
 
     <footer>
-      <a href="/">FreeSurf</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/ai-processing">AI Processing</a>
+      <a href="/">FreeSurf</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
     </footer>
   </div>
 </body>
